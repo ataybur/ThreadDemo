@@ -1,8 +1,10 @@
 package com.ataybur.thread;
 
-import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 class Hi extends SaySomething implements Runnable {
@@ -22,7 +24,7 @@ abstract class SaySomething {
 		// synchronized (SaySomething.class) {
 		IntStream //
 				.range(0, 5) //
-				// .parallel() //
+				.parallel() //
 				.forEach((i) -> {
 					CurrentThreadNameShower.show();
 					System.out.println(something);
@@ -47,7 +49,8 @@ public class ThreadDemo {
 
 	public static void main(String[] args) {
 		// main1();
-		main2();
+//		main2();
+		main3();
 
 	}
 
@@ -67,7 +70,7 @@ public class ThreadDemo {
 		CurrentThreadNameShower.show();
 		Thread hi = new Thread(new Hi());
 		Thread hello = new Thread(new Hello());
-		
+
 		final CompletableFuture future = CompletableFuture //
 				.runAsync(hi::start) //
 				.runAsync(hello::start);
@@ -83,5 +86,21 @@ public class ThreadDemo {
 		} catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static void main3() {
+		CurrentThreadNameShower.show();
+		ExecutorService executor = Executors.newFixedThreadPool(2);
+		executor.execute(new Hi());
+		executor.execute(new Hello());
+		executor.shutdown();
+		stopWatch.start();
+		try {
+			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.HOURS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		stopWatch.lap();
+		stopWatch.printLaps();
 	}
 }
